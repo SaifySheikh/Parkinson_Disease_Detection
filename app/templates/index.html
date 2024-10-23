@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parkinson's Detection</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Prociono&display=swap" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+    <style>
+        /* Body styling */
+        body {
+            font-family: 'Prociono', serif; /* Updated font-family */
+            background-color: #F3F9F8; /* Background color */
+            color: #ffffff; /* White font for better readability */
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh; /* Full viewport height */
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        :root {
+            --header-outer-height: 110px;
+            --header-inner-height: 70px;
+            --header-height-difference: calc(var(--header-outer-height) - var(--header-inner-height));
+            --header-bg: #025D4E;
+        }
+
+        /* Sticky header */
+        .header-outer {
+            height: var(--header-outer-height);
+            position: sticky;
+            top: 0;
+            display: flex;
+            align-items: center;
+            background-color: var(--header-bg);
+            box-shadow: 0 2px 10px 0 rgba(238, 232, 232, 0.1);
+            width: 100%; /* Full width header */
+        }
+
+        .header-inner {
+            height: var(--header-inner-height);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%; /* Full width inner header */
+        }
+
+        .header-logo img {
+            display: block;
+            height: calc(var(--header-inner-height) - 30px);
+        }
+
+        .header-navigation {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .header-navigation a,
+        .header-navigation button {
+            font-size: 1.125rem;
+            color: rgb(255, 255, 255); /* Change nav options color to white */
+            margin-left: 1.75rem;
+            position: relative;
+            font-weight: 500;
+        }
+
+        .header-navigation a {
+            display: none;
+            text-decoration: none;
+        }
+
+        .header-navigation button {
+            border: 0;
+            background-color: transparent;
+            padding: 0;
+        }
+
+        .header-navigation a:hover:after,
+        .header-navigation button:hover:after {
+            transform: scaleX(1);
+        }
+
+        .header-navigation a:after,
+        .header-navigation button:after {
+            transition: 0.25s ease;
+            content: "";
+            display: block;
+            width: 100%;
+            height: 2px;
+            background-color: currentcolor;
+            transform: scaleX(0);
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+        }
+
+        .main {
+            margin-top: 3rem;
+        }
+
+        .widget {
+            width: 100%;
+            max-width: 600px;
+            border-radius: 8px;
+            box-shadow: 0 15px 30px 0 rgba(255, 255, 255, 0.1);
+            background-color: #fff;
+            padding: 2.5rem;
+            margin-left: auto;
+            margin-right: auto;
+            margin-bottom: 2rem;
+            font-size: 1.125rem;
+        }
+
+        .widget > * + * {
+            margin-top: 1.25em;
+        }
+
+        .widget h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            line-height: 1.25;
+        }
+
+        .widget code {
+            display: inline-block;
+            padding: 0.125em 0.25em;
+            border-radius: 2px;
+            background-color: #bee5d3;
+        }
+
+        .widget strong {
+            font-weight: 700;
+        }
+
+        @media (min-width: 800px) {
+            .header-navigation a {
+                display: inline-block;
+            }
+
+            .header-navigation button {
+                display: none;
+            }
+        }
+
+        /* Centered container */
+        .container {
+            background-color: #025D4E; /* Light green for main content */
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+            width: 80%;
+            max-width: 600px;
+            margin-top: 80px; /* Add margin-top to account for the fixed header */
+            flex: 1; /* Allow the container to grow and fill space */
+        }
+
+        h1 {
+            color: #ffffff; /* White color for headers */
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+
+        p {
+            color: #ffffff; /* White for paragraph text */
+            font-size: 1rem;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* Styling the form */
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+            color: #ffffff; /* White for labels */
+        }
+
+        input[type="file"] {
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            border: 1px solid #ccc; /* Light border for input */
+            background-color: #ffffff; /* White for input field */
+            color: #333333; /* Dark text for input */
+        }
+
+        button {
+            background-color: #00b342; /* Green button */
+            color: #ffffff; /* White font */
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #009463; /* Darker green on hover */
+        }
+
+        /* Footer styling */
+        footer {
+            background-color: #025D4E; /* Matching footer color */
+            width: 100%;
+            padding: 20px 0;
+            position: relative;
+            bottom: 0;
+            left: 0;
+            animation: slideUp 0.5s ease;
+            transition: transform 0.3s ease;
+            text-align: center;
+        }
+
+        /* Footer animation on hover */
+        footer:hover {
+            transform: translateY(-5px);
+        }
+
+        /* Footer text */
+        .footer-text {
+            font-size: 0.9rem;
+            color: #a9a9a9; /* Light gray for footer text */
+        }
+
+        /* Animation keyframes */
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .info-container {
+                flex-direction: column;
+                text-align: center;
+            }
+        
+            .image-container, .text-container {
+                padding: 20px;
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <!-- Header section -->
+    <header class="header-outer">
+        <div class="header-inner responsive-wrapper">
+            <div class="header-logo" style="margin-left: 30px;">
+                <img src="https://assets.codepen.io/285131/acme-2.svg" />
+            </div>
+            <nav class="header-navigation">
+                <a href="{{ url_for('main_routes.home') }}">Home</a>
+                <a href="{{ url_for('main_routes.developer') }}">Developers</a>
+                <a href="#" style="margin-right: 30px;" onclick="scrollToMain()">Detect Parkinsons</a>
+                <button>Menu</button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Image and content container -->
+<section class="info-section" style="display: flex; align-items: center; justify-content: center; padding: 50px 0; background-color: #f0f0f0;">
+    <div class="info-container" style="display: flex; width: 80%; max-width: 1200px; background-color: #ffffff; border-radius: 10px; box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);">
+        
+        <!-- Image on the left -->
+        <div class="image-container" style="flex: 1; padding: 20px;">
+            <img src="https://img.freepik.com/premium-vector/medical-technology-doctor-use-ai-robots-diagnosis-care-increasung-accuracy-patient-treatment_235461-501.jpg" alt="Parkinson's Detection Image" style="width: 100%; border-radius: 10px;">
+        </div>
+        
+        <!-- Content on the right -->
+        <div class="text-container" style="flex: 1; padding: 30px;">
+            <!-- New section explaining Parkinson's disease -->
+            <h2 style="font-size: 2rem; color: #025D4E; margin-top: 40px; margin-bottom: 20px;">What is Parkinson's Disease?</h2>
+            <p style="font-size: 1.1rem; color: #333333; margin-bottom: 20px;">
+                Parkinson's disease is a neurodegenerative disorder that primarily affects movement. It occurs when nerve cells in the brain responsible for producing dopamine—a chemical messenger—become impaired or die. The disease leads to symptoms such as tremors, stiffness, slow movement, and difficulty with balance and coordination. Over time, these symptoms worsen, affecting daily activities.
+            </p>
+        </div>
+    </div>
+</section>
+
+
+    <!-- Image and content container -->
+    <section class="info-section" style="display: flex; align-items: center; justify-content: center; padding: 50px 0; background-color: #f0f0f0;">
+        <div class="info-container" style="display: flex; width: 80%; max-width: 1200px; background-color: #ffffff; border-radius: 10px; box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);">
+            
+            <!-- Content on the left -->
+            <div class="text-container" style="flex: 1; padding: 30px;">
+                <h2 style="font-size: 2rem; color: #025D4E; margin-top: 40px; margin-bottom: 20px;">Why is Early Detection Important?</h2>
+                <p style="font-size: 1.1rem; color: #333333;">
+                    Early detection of Parkinson's disease is crucial for several reasons:
+                </p>
+                <ul style="font-size: 1.1rem; color: #333333; margin-bottom: 20px; padding-left: 20px;">
+                    <li>It allows for timely medical intervention to manage symptoms and slow the progression of the disease.</li>
+                    <li>Early treatment improves the quality of life by maintaining motor functions for a longer period.</li>
+                    <li>Patients can begin therapies and lifestyle changes that may help delay severe symptoms.</li>
+                    <li>Detecting Parkinson's early provides patients and their families with time to plan and adjust to the changes the disease brings.</li>
+                </ul>
+                <p style="font-size: 1.1rem; color: #333333;">
+                    By identifying Parkinson's disease in its early stages, our system helps individuals access treatment sooner, improving long-term outcomes and enhancing the effectiveness of therapy options.
+                </p>
+                <button style="background-color: #025D4E; margin-left: 30%;" onclick="scrollToMain()">Detect Parkinsons</button>
+            </div>
+
+            <!-- Image on the right -->
+            <div class="image-container" style="flex: 1; padding: 20px;">
+                <img src="https://www.verywellhealth.com/thmb/k_If-kT-9bBA4Ze60RJu3uUNjto=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/parkinsonism-causes-symptoms-and-treatment-5189631_final-01-06edf39f8a2a42f59d40151e8dd405b4.jpg" alt="Parkinson's Detection Image" style="width: 100%; border-radius: 10px;">
+            </div>
+
+        </div>
+    </section>
+
+<!-- Image and content container -->
+<section class="info-section" style="display: flex; align-items: center; justify-content: center; padding: 50px 0; background-color: #f0f0f0;">
+    <div class="info-container" style="display: flex; width: 80%; max-width: 1200px; background-color: #ffffff; border-radius: 10px; box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);">
+        
+        <!-- Image on the left -->
+        <div class="image-container" style="flex: 1; padding: 20px;">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ5wWnEUEgeBMmMhorxSwMmwzMSx-DrtZuAbC6v-zZUr8VDQY1ObB5AeeOfo_PYfEFYuSA&usqp=CAU" alt="Parkinson's Detection Image" style="width: 100%; border-radius: 10px;">
+        </div>
+        
+        <div class="text-container" style="flex: 1; padding: 30px;">
+            <!-- Corrected section explaining how the model works -->
+            <h2 style="font-size: 2rem; color: #025D4E; margin-top: 40px; margin-bottom: 20px;">How Our Model Works</h2>
+            <p style="font-size: 1.1rem; color: #333333; margin-bottom: 20px;">
+                Our Parkinson's Detection model leverages advanced machine learning algorithms to analyze two types of data: voice recordings and hand-drawn spiral images. 
+                <strong>Voice Analysis</strong> examines key vocal features such as jitter, shimmer, and tremors—common indicators of Parkinson's disease. The system processes these features using models like LSTM and CNN-LSTM hybrids to predict the probability of the disease.
+            </p>
+            <p style="font-size: 1.1rem; color: #333333; margin-bottom: 20px;">
+                <strong>Image Analysis</strong> focuses on spiral drawings, where we use computer vision techniques to assess hand movement. By analyzing the smoothness and consistency of the spirals, our model detects any irregularities that may suggest early motor control issues related to Parkinson's.
+            </p>
+            <p style="font-size: 1.1rem; color: #333333; margin-bottom: 20px;">
+                These two models work in tandem: if one model detects a higher probability of Parkinson's while the other is inconclusive, the system weighs the stronger evidence. This multi-modal approach enhances the accuracy of early detection, providing a more reliable diagnosis by combining different aspects of the disease.
+            </p>
+        </div>
+        
+    </div>
+</section>
+
+    <!-- Main content section -->
+    <div id="main-container" class="container" style="margin-left: 30%; margin-bottom: 5%;">
+        <h1>Parkinson's Detection</h1>
+        <p>Upload Your Voice file and Image file here to get the cumulative result.</p>
+        <p>Please upload an MP3 voice file and Image file using the button below-</p>
+        <form id="uploadForm" action="{{ url_for('main_routes.upload') }}" method="POST" enctype="multipart/form-data">
+            <label for="voiceFile">Choose your voice file (MP3 only):</label>
+            <input type="file" id="voiceFile" name="voiceFile" accept=".mp3" required>
+            <label for="imageFile">Choose your Image file (jpg/jpeg/png only):</label>
+            <input type="file" id="imageFile" name="imageFile" accept=".jpg" accept=".jpeg" accept=".png" required>
+            <button type="submit">Upload</button>
+        </form>
+    </div>
+
+    <!-- Footer section -->
+    <footer>
+        <p class="footer-text">All Rights Reserved| © 2024 SSK <a href="#" style="color: #ffffff; text-decoration: none;">Home</a> | <a href="#" style="color: #ffffff; text-decoration: none;">Developers</a> </p>
+    </footer>
+
+    <script>
+        function scrollToMain() {
+            const mainContainer = document.getElementById('main-container');
+            mainContainer.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        $(document).ready(function () {
+        $('#uploadForm').on('submit', function (event) {
+            event.preventDefault();  // Prevent the default form submission
+
+            var formData = new FormData(this); // Create FormData object with the form's data
+
+            $.ajax({
+                url: '/upload',
+                type: 'POST',
+                data: formData,
+                contentType: false, // Set to false to let jQuery set it correctly
+                processData: false, // Set to false to prevent jQuery from processing the data
+                success: function (response) {
+                    // Display the result in an alert
+                    alert("Final Prediction: " + response.final_prediction +
+                          "\nVoice Confidence: " + response.voice_confidence +
+                          "\nImage Confidence: " + response.image_confidence +
+                          "\nSource: " + response.source);
+                },
+                error: function (xhr) {
+                    alert("Error: " + xhr.responseJSON.error);  // Display the error message
+                }
+            });
+        });
+    });
+    </script>
+</body>
+</html>
