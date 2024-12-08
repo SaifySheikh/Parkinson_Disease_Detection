@@ -1,4 +1,4 @@
----
+
 
 # **Parkinson's Disease Detection Using Voice and Spiral Image Data**
 
